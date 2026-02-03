@@ -89,4 +89,7 @@ After that, through reflection, CommandHandlerFactory calls Invoke() for a speci
 
 The request is processed inside the handler, and business logic is executed. If it is a server handler, a response is sent. If the handler is a client, then the UI is updated.
 
-
+## 📞 Contacts
+* **Email:** adelinazakirova24@gmail.com
+* **GitHub:** [vinwap07](https://github.com/vinwap07)
+* **Telegram:** 
