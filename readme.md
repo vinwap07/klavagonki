@@ -92,4 +92,5 @@ The request is processed inside the handler, and business logic is executed. If 
 ## 📞 Contacts
 * **Email:** adelinazakirova24@gmail.com
 * **GitHub:** [vinwap07](https://github.com/vinwap07)
-* **Telegram:** 
+* **Telegram:** [@vinwap](https://t.me/vinwap)
+
