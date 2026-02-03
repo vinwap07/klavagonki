@@ -34,20 +34,27 @@ public static class SocketExtension
         await socket.SendAsync(package, SocketFlags.None);
     }
 
-    public static async Task SendRoomName(this Socket socket, string room)
+    public static async Task SendRoom(this Socket socket, Room room)
     {
         var payload = PayloadSerializer.Encode(
             new Dictionary<string, string>
             {
-                { "room", room }
+                { "room", room.Name },
+                { "playersCount", room.GetPlayers().Count.ToString()},
+                { "maxPlayers", room.MaxPlayers.ToString()}
             });
-        var package = new PackageBuilder(payload, Command.RoomName).Build();
+        var package = new PackageBuilder(payload, Command.SendRoom).Build();
         await socket.SendAsync(package, SocketFlags.None);
     }
 
-    public static async Task SendStartGame(this Socket socket)
+    public static async Task SendStartGame(this Socket socket, string text)
     {
-        var package = new PackageBuilder([], Command.StartGame).Build();
+        var payload = PayloadSerializer.Encode(
+            new Dictionary<string, string>
+            {
+                { "text", text }
+            });
+        var package = new PackageBuilder(payload, Command.StartGame).Build();
         await socket.SendAsync(package, SocketFlags.None);
     }
 
@@ -55,7 +62,7 @@ public static class SocketExtension
     {
         var payload = PayloadSerializer.Encode(new Dictionary<string, string>
         {
-            { "roomName", roomName },
+            { "room", roomName },
             { "maxPlayers", maxPlayers.ToString() },
             { "nickname", nickname }
         });
@@ -87,6 +94,17 @@ public static class SocketExtension
         await socket.SendAsync(package, SocketFlags.None);
     }
 
+    public static async Task SendGetRoomInfo(this Socket socket, string roomName)
+    {
+        var payload = PayloadSerializer.Encode(
+            new Dictionary<string, string>
+            {
+                { "roomName", roomName }
+            });
+        var package = new PackageBuilder(payload, Command.GetRoomInfo).Build();
+        await socket.SendAsync(package, SocketFlags.None);
+    }
+
     public static async Task SendChar(this Socket socket, char c, string room, string nickname)
     {
         var payload = PayloadSerializer.Encode(
@@ -100,13 +118,10 @@ public static class SocketExtension
         await socket.SendAsync(package, SocketFlags.None);
     }
 
-    public static async Task SendCheckedChar(this Socket socket, bool isCorrect)
+    public static async Task SendCheckedCharAndProgress(this Socket socket, bool isCorrect, Dictionary<string, string> progresses)
     {
-        var payload = PayloadSerializer.Encode(
-            new Dictionary<string, string>
-            {
-                { "isCorrect", isCorrect.ToString() }
-            });
+        progresses.Add("isCorrect", isCorrect.ToString());
+        var payload = PayloadSerializer.Encode(progresses);
         var package = new PackageBuilder(payload, Command.CheckChar).Build();
         await socket.SendAsync(package, SocketFlags.None);
     }
@@ -138,7 +153,16 @@ public static class SocketExtension
 
     public static async Task SendRooms(this Socket socket, Room[] rooms)
     {
-        var payload = Encoding.ASCII.GetBytes(string.Join(",", rooms.Select(r => r.Name)));
+        var dict = new Dictionary<string, string>(); 
+        if (rooms == null || rooms.Length == 0)
+        {
+            dict["rooms"] = "[]";
+        }
+        else
+        {
+            dict["rooms"] = string.Join(",", rooms.Select(r => r.Name));
+        }
+        var payload = PayloadSerializer.Encode(dict);
         var package = new PackageBuilder(payload, Command.SendRooms).Build();
         await socket.SendAsync(package, SocketFlags.None);
     }

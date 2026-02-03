@@ -22,7 +22,7 @@ public class JoinRoomCommandHandler : IServerCommandHandler
         {
             room.Value.TryAddPlayer(player);
             Console.WriteLine($"Player {playerName} is added to room {roomName}");
-            await sender.SendOk();
+            await sender.SendRoom(room.Value);
         }
         catch (ArgumentException)
         {

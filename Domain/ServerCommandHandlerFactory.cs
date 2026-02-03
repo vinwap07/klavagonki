@@ -11,14 +11,36 @@ public class ServerCommandHandlerFactory
     private static Dictionary<Command, IServerCommandHandler> BuildAllHandlers()
     {
         var allHandlers = new Dictionary<Command, IServerCommandHandler>();
-        var handlerTypes = Assembly.GetExecutingAssembly().GetTypes()
-            .Where(type => type is { IsClass : true, IsAbstract: false } 
-                && typeof(IServerCommandHandler).IsAssignableFrom(type));
-        foreach (var handlerType in handlerTypes)
+        
+        var assemblies = new[] 
+        { 
+            Assembly.GetExecutingAssembly(),
+            Assembly.GetEntryAssembly() ?? Assembly.GetCallingAssembly()
+        };
+        
+        foreach (var assembly in assemblies)
         {
-            var command = handlerType.GetCustomAttribute<CommandAttribute>()!.Command ;
-            var handler = (IServerCommandHandler)Activator.CreateInstance(handlerType)!;
-            allHandlers.Add(command, handler);
+            var handlerTypes = assembly.GetTypes()
+                .Where(type => type is { IsClass: true, IsAbstract: false } 
+                               && typeof(IServerCommandHandler).IsAssignableFrom(type));
+            
+            foreach (var handlerType in handlerTypes)
+            {
+                var attribute = handlerType.GetCustomAttribute<CommandAttribute>();
+                if (attribute == null)
+                {
+                    continue;
+                }
+                try
+                {
+                    var handler = (IServerCommandHandler)Activator.CreateInstance(handlerType)!;
+                    allHandlers[attribute.Command] = handler;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Ошибка создания обработчика {handlerType.Name}: {ex.Message}");
+                }
+            }
         }
         return allHandlers;
     }

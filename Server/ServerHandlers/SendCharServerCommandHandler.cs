@@ -23,17 +23,25 @@ public class SendCharServerCommandHandler : IServerCommandHandler
         if (isCorrect)
         {
             player.CurrentProgress += 1;
-            if (player.CurrentProgress == room.Value.Text.Length)
-            {
-                await HandleFinishingPlayer(player, room.Value, charTime);
-            }
         }
         else
         {
             player.ErrorsCount += 1;
         }
+        
+        var progresses = new Dictionary<string, string>();
+        foreach (var p in room.Value.GetPlayers())
+        {
+            progresses.Add(p.Nickname, p.CurrentProgress.ToString());
+        }
 
-        await sender.SendCheckedChar(isCorrect);
+        await sender.SendCheckedCharAndProgress(isCorrect, progresses);
+        
+        if (player.CurrentProgress == room.Value.Text.Length)
+        {
+            Console.WriteLine($"Player {playerName} is finished in room {roomName}");
+            await HandleFinishingPlayer(player, room.Value, charTime);
+        }
     }
 
     private async Task HandleFinishingPlayer(Player player, Room room, TimeOnly finishTime)
@@ -45,11 +53,8 @@ public class SendCharServerCommandHandler : IServerCommandHandler
         player.IsFinished = true;
         player.Place = finishedPlayersCount + 1;
         player.FinishTime = finishTime;
+        
         var results = new GameResult(player).ToDictionary();
-
-        foreach (var p in room.GetPlayers())
-        {
-            await p.Connector.SendResult(results);
-        }
+        player.Connector.SendResult(results);
     }
 }

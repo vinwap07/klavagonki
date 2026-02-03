@@ -1,56 +1,92 @@
-# Клиент-серверное приложение - игра Клавагонки 
+# 🏁 Klavagonki - Multiplayer Typing Speed Game
 
-**Суть игры** в написании заданного текста на клавиатуре с минимальными затратами по времени и минимальным количеством ошибок при написании. Игроки соревнуются между собой в скорости печати. 
+A console-based multiplayer typing competition game using the TCP protocol. Reliazed on C#, client-server app.
 
-### Задачи 
-Сервер: 
-- ждет подключения игроков
-- выбирает текст для гонки
-- синхронизирует начало
-- отслеживает прогресс игроков
-- определяет победителя
+- TCP-based
+- Real-time statistics 
+- Private rooms
 
-Клиент: 
-- подключается к серверу
-- отображает текст 
-- принимает ввод пользователя
-- отправляет прогресс на сервер 
+### Technologyes stack 
 
-### Протокол передачи данных 
+- .NET 8 
+- System.Net.Sockets
 
-Используется **TCP** протокол, так как в игре задержки не являются критичными, а вот дохождение данных от клиента к серверу и их последовательность играет важную роль.
+### Quick start
 
-Команды от сервера: 
-- Подтверджение подключения: 0x06 (ACK)
-- Отказ подключения: 0x15 (NAK)
-- Начало игры: 0x53 (S)
-- Обновление прогресса: 0x55 (U)
-- Результаты игры: 0x52 (R)
-- Ошибка: 0x45 (E)
-- Список комнат: 0x4C (L)
+1. Clone repository 
 
-Команды от клиента: 
-- Создание комнаты: 0x43 (C) 
-- Удаление комнаты: 0x18 (CAN) 
-- Вход в комнату: 0x4A (J)
-- Выход из комнаты: 0x51 (Q)
-- Подключение к серверу: 0x01 (SOH)
-- Готов играть: 0x05 (ENQ)
-- Написанный символ: 0x1A (SUB)
-- Конец гонки: 0x04 (EOT)
+```
+git clone https://github.com/vinwap07/klavagonki
+cd klavagonki
+```
 
-### Структура приложения
+2. Run server
+```
+dotnet run --project .\Server\Server.csproj
+```
 
-- Server
-    - GameServer.cs
-    - GameSession.cs
-    - Player.cs
-    - Protocol.cs
-- Client
-    - GameClient.cs
-    - GameUI.cs 
-    - Protocol.cs
-- Shared
-    - Protocol.cs
+3. Run clients (from 2 to 10)
+```
+dotnet run --project .\Client\Client.csproj
+```
+
+## Data transfer
+### Commans
+``` csharp
+public enum Command : byte
+{
+    // client -> server
+    CreateRoom = 0x43,
+    JoinRoom = 0x4A,
+    LeaveRoom = 0x4C,
+    ReadyToStart = 0x52,
+    SendChar = 0x5F,
+    GetRooms = 0x7B,
+    
+    // server -> client
+    SendRooms = 0x7D,
+    SendText = 0x22,
+    CheckChar = 0x3F,
+    Result = 0x3D,
+    RoomId = 0x11,
+    CommandResponse = 0x06,
+    StartGame = 0x53,
+    SendAllProgresses = 0x3E,
+}
+```
+### Codes
+``` csharp 
+public enum CommandResponse
+{
+    OK,
+    PlayerNotJoined,
+    IncorrectSender,
+    CommandIncorrect,
+    PackageIncorrect,
+    SessionNotFound,
+    RoomIsFull,
+}
+```
+
+
+**Message format:**
+```
+[package start: 1 byte][command: 1 byte][length: 2 bytes][data: N bytes][package end: 1 byte]
+```
+
+
+### Application structure
+
+Solution consists of 3 projectes: 
+- `Domain` provides tools for using the data transfer protocol
+- `Server` receives and sends requests
+- `Client` implements the user-visible portion of the application, sending and receiving requests
+
+### Processing requests
+To get the command and data from the received package, the PackageParser class with the TryParse method will help. It accepts an array of bytes - the received package. 
+
+After that, through reflection, CommandHandlerFactory calls Invoke() for a specific Handler by its attribute, the command it processes. That is, each command has its own handler.
+
+The request is processed inside the handler, and business logic is executed. If it is a server handler, a response is sent. If the handler is a client, then the UI is updated.
 
 

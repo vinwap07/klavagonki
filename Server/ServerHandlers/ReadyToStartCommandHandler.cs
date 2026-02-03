@@ -17,7 +17,6 @@ public class ReadyToStartCommandHandler : IServerCommandHandler
             .First(r => r.Key == roomName);
         var player = room.Value.GetPlayer(playerName);
         player.IsReady = true;
-        await sender.SendOk();
         try
         {
             room.Value.TryStartGame();
@@ -25,13 +24,13 @@ public class ReadyToStartCommandHandler : IServerCommandHandler
             var players = room.Value.GetPlayers();
             foreach (var p in players)
             {
-                await p.Connector.SendStartGame();
-                await p.Connector.SendText(room.Value.Text);
+                await p.Connector.SendStartGame(room.Value.Text);
             }
             
         }
         catch 
         {
+            await sender.SendOk();
             Console.WriteLine("Not all players are ready");
         }
     }

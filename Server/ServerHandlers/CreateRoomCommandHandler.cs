@@ -24,7 +24,7 @@ public class CreateRoomCommandHandler : IServerCommandHandler
         {
             room.TryAddPlayer(player);
             Console.WriteLine($"Player {playerName} is added to room {roomName}");
-            await sender.SendRoomName(roomName);
+            await sender.SendRoom(room);
         }
         catch (ArgumentException)
         {

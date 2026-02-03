@@ -7,17 +7,17 @@ public class Room
     // TODO: переделать этот кринж в чтение из файла с текстами
     private static readonly List<string> Textes = 
     [
-        "Любовь это боль, которая выжигает все внутри, подобно огню, поглощающему все чувства, которые находятся в душе.",
-        "Винить другого, как и себя - все равно, что хвалить себя же, это любимейшее занятие всех людей, тешить свое тщеславие, льстить себе же.",
-        "Жизнь - это не рай, но ее необходимо изменять в лучшую сторону, а не в худшую, чтобы в конце пути не бояться оказаться в аду.",
-        "Влюбленные бесстрашны и отважны, они, как птицы, пролетают самый яростный огонь даже не опалив крыльев.",
-        "Мы несем в себе собственную истину, которая является комбинацией множества истин, заимствованных у других.",
-        "Мы на многое не отваживаемся не потому что оно трудно, оно трудно именно потому, что мы на него не отваживаемся."
+        "My family is very important to me. ",
+        "My sister likes to cook with my grandmother.",
+        "She came from Italy when I was two years old.",
+        "My sister is a nervous girl, but she is very kind.",
+        "I have a younger brother. He just started high school.",
+        "Sometimes they visit me in New York. I am happy."
     ];
     public string Name { get; set; }
     public string Text { get; private set; }
     public int MaxPlayers { get; set; }
-    public bool IsGameStarted { get; private set; } = false;
+    public bool IsGameStarted { get; set; } = false;
     private List<Player> _players = new List<Player>();
 
     public Room(string name, int maxPlayers)
@@ -34,12 +34,16 @@ public class Room
 
     public void TryAddPlayer(Player player)
     {
-        if (_players.Count == MaxPlayers || IsGameStarted)
+        if (_players.Count == MaxPlayers)
         {
-            _players.Add(player);
+            throw new ArgumentException("room is full");
         }
-        
-        throw new ArgumentException("room is full");
+        if (IsGameStarted)
+        {
+            throw new ArgumentException("game is already started");
+        }
+
+        _players.Add(player);
     }
 
     public void DeletePlayer(string playerName)

@@ -17,6 +17,10 @@ public class LeaveRoomCommandHandler : IServerCommandHandler
             .First(r => r.Key == roomName);
         
         room.Value.DeletePlayer(playerName);
+        if (room.Value.GetPlayers().Count() == 0)
+        {
+            rooms.Remove(roomName, out var _);
+        }
         Console.WriteLine($"{playerName} is now leaving room {room.Value.Name}");
         await sender.SendOk();
     }

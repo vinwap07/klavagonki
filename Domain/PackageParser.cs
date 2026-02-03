@@ -27,7 +27,7 @@ public static class PackageParser
             return null;
         }
         
-        if (length > PackageMeta.PayloadMaxByte || length + 4 != data.Length)
+        if (length > PackageMeta.PayloadMaxByte)
         {
             commandResponse = CommandResponse.PackageIncorrect;
             return null;

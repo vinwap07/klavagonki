@@ -4,12 +4,12 @@ using System.Net.Sockets;
 using Domain.Models;
 using Domain;
 
-public class KlavagonkiServer
+public class KlavogonkiServer
 {
    private readonly Socket _server;
    private ConcurrentDictionary<string, Room> _rooms = new();
 
-   public KlavagonkiServer(IPEndPoint endPoint)
+   public KlavogonkiServer(IPEndPoint endPoint)
    {
       _server = new Socket(endPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
       _server.Bind(endPoint);
@@ -49,7 +49,7 @@ public class KlavagonkiServer
          SocketFlags.None);
       
       
-      ArraySegment<byte> buffer = new byte[1024];
+      ArraySegment<byte> buffer = new byte[128];
 
       do
       {
@@ -75,6 +75,8 @@ public class KlavagonkiServer
          await HandleClient(connection, response.Value.Command, response.Value.Payload, cts);
       }
       while (!cts.IsCancellationRequested || connection.Connected);
+      
+      
    }
 
    private async Task HandleClient(Socket connection, Command command, byte[] payload, CancellationTokenSource cts)
